@@ -1,0 +1,30 @@
+vmType: vz
+arch: default
+rosetta:
+  enabled: null
+  binfmt: null
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+cpus: 4
+memory: "8GiB"
+disk: null
+containerd:
+  system: false
+  user: false
+mounts:
+  - location: "~"
+    writable: false
+  - location: "/tmp/lima"
+    writable: true
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o o pipefail
+      # macvlan setup
+      ip link add macvlan0 link eth0 type macvlan mode bridge
+      ip addr add 172.24.4.10/24 dev macvlan0
+      ip link set macvlan0 up
+      # devstack restart
+      if [ -d /opt/stack/devstack ]; then systemctl restart devstack@*; fi
